@@ -2,9 +2,10 @@ Flask
 keras
 numpy
 opencv-python
-tensorflow
+tensorflow==2.15.1
 pandas 
 dvc
+mlflow==2.2.2
 notebook
 matplotlib
 seaborn
@@ -17,4 +18,5 @@ types-PyYAML
 scipy
 Flask
 Flask-Cors
+gdown
 -e .
