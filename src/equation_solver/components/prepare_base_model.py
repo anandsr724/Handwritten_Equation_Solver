@@ -67,9 +67,18 @@ class PrepareBaseModel:
                 if is_conv_layer(layer):
                     last_conv_index = i
             
+                    '''
             # Freeze layers up to the last convolutional layer
             for i, layer in enumerate(model.layers):
                 if i <= last_conv_index:
+                    layer.trainable = False
+                else:
+                    layer.trainable = True
+                    '''
+            # Freeze layers up to the last convolutional layer
+            for i, layer in enumerate(model.layers):
+                # print("enumerating: ", i , " layer: ", layer)
+                if i <= freeze_till:
                     layer.trainable = False
                 else:
                     layer.trainable = True
