@@ -5,57 +5,64 @@ import mlflow.keras
 from urllib.parse import urlparse
 from equation_solver.entity.config_entity import EvaluationConfig
 from equation_solver.utils.common import save_json
+import numpy as np
+import os
+from sklearn.model_selection import train_test_split
 
 class Evaluation:
     def __init__(self, config: EvaluationConfig):
         self.config = config
+        self.class_indices = {name: idx for idx, name in enumerate(self.config.classes_ideal)}
+        self.model = self.load_model(self.config.path_of_model)
 
-    
-    def _valid_generator(self):
+    def load_data(self):
+        all_files = []
+        for root, dirs, files in os.walk(self.config.training_data):
+            for file in files:
+                if file.endswith(('.png', '.jpg', '.jpeg')):
+                    class_name = os.path.basename(root)
+                    if class_name in self.class_indices:
+                        file_path = os.path.join(root, file)
+                        all_files.append((file_path, class_name))
 
-        input_shape = self.model.input_shape
-        color_mode = "grayscale" if input_shape[-1] == 1 else "rgb"
-        # print(f"Using color mode: {color_mode}")
+        # Shuffle the files
+        np.random.shuffle(all_files)
 
-        datagenerator_kwargs = dict(
-            rescale = 1./255,
-            validation_split=0.20
+        # Split file paths and labels
+        file_paths, class_names = zip(*all_files)
+        labels = [self.class_indices[class_name] for class_name in class_names]
+
+        # Perform stratified split
+        file_paths_train, file_paths_val, labels_train, labels_val = train_test_split(
+            file_paths, labels, test_size=0.2, stratify=labels, random_state=34
         )
 
-        dataflow_kwargs = dict(
-            target_size=self.config.params_image_size[:-1],
-            batch_size=self.config.params_batch_size,
-            interpolation="bilinear",
-            color_mode=color_mode,
-            class_mode='sparse'  # For sparse categorical crossentropy
-        )
+        # Create datasets
+        val_ds = tf.data.Dataset.from_tensor_slices((file_paths_val, labels_val))
 
-        valid_datagenerator = tf.keras.preprocessing.image.ImageDataGenerator(
-            **datagenerator_kwargs
-        )
+        # Apply preprocessing
+        val_ds = val_ds.map(self.load_image, num_parallel_calls=tf.data.AUTOTUNE)
 
-        # Validation generator - no shuffling
-        self.valid_generator = valid_datagenerator.flow_from_directory(
-            directory=self.config.training_data,
-            subset="validation",
-            shuffle=False,
-            **dataflow_kwargs
-        )
+        # Batch
+        val_ds = val_ds.cache().batch(self.config.params_batch_size).prefetch(tf.data.AUTOTUNE)
 
+        return val_ds
 
-    @staticmethod
-    def load_model(path: Path) -> tf.keras.Model:
+    def load_image(self, file_path, label):
+        image = tf.io.read_file(file_path)
+        image = tf.image.decode_jpeg(image, channels=3)
+        image = tf.image.resize(image, self.config.params_image_size[:-1])
+        image = tf.image.rgb_to_grayscale(image)
+        return image, label
+
+    def load_model(self, path: Path) -> tf.keras.Model:
         return tf.keras.models.load_model(path)
-    
 
     def evaluation(self):
-        self.model = self.load_model(self.config.path_of_model)
-        self._valid_generator()
-
-        # self.score = model.evaluate(self.valid_generator)
-        self.score = self.model.evaluate(self.valid_generator)
-        
+        self.val_ds = self.load_data()
+        self.score = self.model.evaluate(self.val_ds)
         self.save_score()
+
 
     def save_score(self):
         scores = {"loss": self.score[0], "accuracy": self.score[1]}
