@@ -124,6 +124,19 @@ def get_size(path: Path) -> str:
     size_in_kb = round(os.path.getsize(path)/1024)
     return f"~ {size_in_kb} KB"
 
+@ensure_annotations
+def get_unique_class_names(directory: str) -> list:
+    class_names = set()
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith(('.png', '.jpg', '.jpeg')):
+                class_name = os.path.basename(root)
+                class_names.add(class_name)
+    
+    # Sort the class names to ensure consistent order
+    # print("new common")
+    # print(sorted(list(class_names)))
+    return sorted(list(class_names))
 
 def decodeImage(imgstring, fileName):
     imgdata = base64.b64decode(imgstring)
