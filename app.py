@@ -35,7 +35,8 @@ def solve_equation():
 @cross_origin()
 def trainRoute():
     # os.system("python main.py")
-    os.system("dvc repro")
+    return "Please train the model offline"
+    # os.system("dvc repro")
     return "Training done successfully!"
 
 if __name__ == '__main__':
