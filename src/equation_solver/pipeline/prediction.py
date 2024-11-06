@@ -388,8 +388,10 @@ def predict_equation(imgs, target_classes):
 
     # model.save('deploy_web_v1.h5')
     # model = tfk__load_model('deploy_web_v2.h5')
-    model = tfk__load_model(os.path.join("artifacts","training","model.h5"))
-
+    if(os.path.isfile(os.path.join("artifacts","training","model.h5"))):
+        model = tfk__load_model(os.path.join("artifacts","training","model.h5"))
+    else:
+        model = tfk__load_model(os.path.join("model","model.h5"))
 
     equation = []
 
