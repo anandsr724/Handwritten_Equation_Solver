@@ -162,4 +162,5 @@ cython_debug/
 #.idea/
 artifacts/*
 .eq_solver_venv
+.py10_eq
 mlruns
