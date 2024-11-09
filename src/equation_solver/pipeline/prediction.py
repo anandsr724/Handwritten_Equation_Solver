@@ -4,6 +4,7 @@ import numpy as np
 # from tensorflow.keras.models import load_model
 from tensorflow.keras.models import load_model as tfk__load_model
 import os
+import math
 
 IMG_SIZE =45
 class MathSymbol:
@@ -342,7 +343,8 @@ def convert_string(manager):
                         return equation_str
 
                 equation_str = equation_str + str(")")
-                equation_str = equation_str + return_math_keys(key)
+                if i < len(manager):  # Added this check
+                    equation_str = equation_str + return_math_keys(key)
             else:
                 equation_str = equation_str + return_math_keys(key)
 
@@ -352,11 +354,12 @@ def convert_string(manager):
             equation_str = equation_str + '**('
             while(( i  < len(manager) ) and (symbol.symbol_type == 'pow')):
                 equation_str = equation_str + return_math_keys(key)
-                print("added" , return_math_keys(key))
+                # print("added" , return_math_keys(key))
                 i+=1
                 if ( i  < len(manager)):
                         key, symbol = manager[i]
             equation_str = equation_str + ')'
+            continue
 
 
         i+=1
@@ -456,7 +459,7 @@ def process(parent_img: np.ndarray) -> dict[str, any]:
         try:
             keys = [int(item) if item.isdigit() else item for item in equation]
             manager = MathSymbolManager()
-
+            print("checl101" , keys)
             # Extract coordinates
             xi_values = [entry['xi'] for entry in sorted_image_data.values()]
             yi_values = [entry['yi'] for entry in sorted_image_data.values()]
@@ -466,9 +469,12 @@ def process(parent_img: np.ndarray) -> dict[str, any]:
             # Add symbols to manager
             for i in range(len(keys)):
                 manager.add_symbol(keys[i], sym_type[i], xi_values[i], yi_values[i], xf_values[i], yf_values[i])
-
+            
             # Process manager
             manager_combined = combine_digits(manager)
+            # print("After combining digits:")
+            # manager_combined.display_all_symbols()  # To display the keys
+
             final_equation = convert_string(manager_combined)
             print(f"Final equation: {final_equation}")
 
