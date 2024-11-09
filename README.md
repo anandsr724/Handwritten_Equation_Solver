@@ -12,7 +12,6 @@ This project is a web application that recognizes and solves handwritten mathema
 ## Demo
 
 You can access the app here: [Render Deployment Link](https://equation-solver-y5en.onrender.com)
-(Replace this link with the actual Render deployment URL)
 
 ## Screenshots
 
