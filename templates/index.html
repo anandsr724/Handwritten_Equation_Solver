@@ -228,7 +228,6 @@
         function solveEquation() {
             const imageData = canvas.toDataURL('image/png');
             
-            // Send the image data to your server
             fetch('/solve-equation', {
                 method: 'POST',
                 headers: {
@@ -238,12 +237,13 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('result').textContent = `Solution: ${data.solution}`;
-                showAnyaImage('success');
+                const resultElement = document.getElementById('result');
+                resultElement.innerHTML = data.solution.replace(/\n/g, '<br>');
+                showAnyaImage(data.success ? 'success' : 'error');
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('result').textContent = 'Error solving equation';
+                document.getElementById('result').textContent = 'Server error occurred';
                 showAnyaImage('error');
             });
         }
