@@ -383,10 +383,9 @@ def get_symbol_type(sorted_image_data):    # gives a list of the symbol type
     return sym_type
 
 
-def predict_equation(imgs: List[np.ndarray], target_classes: List[str]) -> List[str]:
-    """
-    Predict mathematical symbols from images using the trained model.
-    """
+def predict_equation(imgs: list[np.ndarray], target_classes: list[str]) -> list[str]:
+
+    # Predict mathematical symbols from images using the trained model.
     try:
         # Load model
         model_path = os.path.join("artifacts", "training", "model.h5")
@@ -419,7 +418,7 @@ def predict_equation(imgs: List[np.ndarray], target_classes: List[str]) -> List[
         print(f"Error in predict_equation: {str(e)}")
         raise
 
-def process(parent_img: np.ndarray) -> Dict[str, Any]:
+def process(parent_img: np.ndarray) -> dict[str, any]:
     """
     Process the input image and return the equation result.
     """
